@@ -22,7 +22,7 @@ public class UserVerificationCodeService
 
     /**
      * This method finds an existing user with given userId Or creates new user if there is no existing user with given
-     * id. Generates an eight digit alphanumeric random PIN and saves it to database.
+     * id. Generates a 6 digit alphanumeric random PIN and saves it to database.
      * 
      * @param userId
      */
@@ -44,7 +44,7 @@ public class UserVerificationCodeService
      * 
      * @param userId - user if
      * @param verificationCode - code to be verified
-     * @return true|false based on whether the code is correct or not
+     * @return true | false based on whether the code is correct or not
      */
     public boolean verifyUserCode(String userId, String verificationCode)
     {

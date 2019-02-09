@@ -21,7 +21,7 @@ import com.altayyar.users.services.UserVerificationCodeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Unit tests for {@link UserVerificationCodeController}
+ * Unit tests for {@link UserVerificationCodeController}.
  * 
  * @author nitasha
  *
@@ -57,7 +57,7 @@ public class UserVerificationCodeControllerTest
     public void testVerifyCode() throws Exception
     {
         String userId = "test123";
-        String code = "ABG789HX";
+        String code = "AB79HX";
 
         Integer resultCode = 1;
         ObjectMapper objectMapper = new ObjectMapper();

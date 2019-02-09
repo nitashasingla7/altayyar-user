@@ -1,7 +1,7 @@
 package com.altayyar.users.services;
 
 /**
- * Utility class to generate 8 digit random alpha numeric PIN.
+ * Utility class to generate 6 digit random alpha numeric PIN.
  * 
  * @author nitasha
  *
@@ -9,7 +9,7 @@ package com.altayyar.users.services;
 public class PINGeneratorUtil
 {
 
-    private static final int ALPHA_NUMERIC_STRING_COUNT = 8; // Alpha numeric string count
+    private static final int ALPHA_NUMERIC_STRING_COUNT = 6; // Alpha numeric string count
     private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     /**

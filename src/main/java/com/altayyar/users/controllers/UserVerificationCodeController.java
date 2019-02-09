@@ -45,7 +45,7 @@ public class UserVerificationCodeController
     /**
      * Verifies the given user code for user id.
      *  
-     * Example URI - GET /verification_code/test123/ABG789HX.json
+     * Example URI - GET /verification_code/test123/AB89HX.json
      * response :    {
      *                  "valid":"true",
      *                  "resultCode":1
