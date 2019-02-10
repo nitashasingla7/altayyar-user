@@ -19,6 +19,9 @@ public class UserVerificationCodeService
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private PINGeneratorUtil pinGenerator;
 
     /**
      * This method finds an existing user with given userId Or creates new user if there is no existing user with given
@@ -32,7 +35,7 @@ public class UserVerificationCodeService
 
         User user = findOrCreateUser(userId);
 
-        String verficationCode = PINGeneratorUtil.randomAlphaNumeric();
+        String verficationCode = pinGenerator.randomAlphaNumeric();
         user.setVerficationCode(verficationCode);
 
         userRepository.save(user);

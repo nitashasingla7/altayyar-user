@@ -1,11 +1,14 @@
 package com.altayyar.users.services;
 
+import org.springframework.stereotype.Component;
+
 /**
  * Utility class to generate 6 digit random alpha numeric PIN.
  * 
  * @author nitasha
  *
  */
+@Component
 public class PINGeneratorUtil
 {
 
@@ -17,7 +20,7 @@ public class PINGeneratorUtil
      * 
      * @return alpha numeric string.
      */
-    public static String randomAlphaNumeric()
+    public String randomAlphaNumeric()
     {
         int count = ALPHA_NUMERIC_STRING_COUNT;
         StringBuilder builder = new StringBuilder();
