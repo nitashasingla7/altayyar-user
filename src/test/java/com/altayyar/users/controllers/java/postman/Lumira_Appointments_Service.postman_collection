@@ -1,0 +1,210 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Lumira Appointments Service",
+		"_postman_id": "87494cab-8031-45f4-2d54-b0b35e984507",
+		"description": "API tests for Lumira Appointments Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Appointments Request Service API",
+			"description": "Tests for Appointments Request Service",
+			"item": [
+				{
+					"name": "Create appointments request Service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is \" + responseCode.code] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{host}}/lumira-appointments/patients/{{mpi}}/appointment-requests",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authorization}}",
+								"description": ""
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/JSON",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"patientMpi\": \"{{mpi}}\",\n   \"userId\" : \"{{userId}}\",\n   \"startDate\": \"{{beginDate}}\",\n   \"endDate\": \"{{endDate}}\",\n   \"reason\" : \"Test reason - postman tests\"\n}"
+						},
+						"description": "### Test Info\n\nThis verifies that `CreateAppointmentsRequest` works correctly.\n\n### Required pre-test parameters\n\nNone\n\n### Coverage\n\nHappy Path!"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Appointments Service API",
+			"description": "Tests for Appointments Service",
+			"item": [
+				{
+					"name": "Get appointments Service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Content-Type is present\"] = responseHeaders.hasOwnProperty(\"Content-Type\");",
+									"tests[\"Status code is \" + responseCode.code] = responseCode.code === 200;",
+									"",
+									"var responseJSON = JSON.parse(responseBody);",
+									"tests[\"Get appointments API successful!\"] = responseJSON !== undefined;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{host}}/lumira-appointments/users/{{userId}}/appointments?beginDate={{beginDate}}&endDate={{endDate}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authorization}}",
+								"description": ""
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/JSON",
+								"description": ""
+							}
+						],
+						"body": {},
+						"description": "### Test Info\n\nThis verifies that `GetAppointmentsService` works correctly and returns appointments associated with the user id.\n\n### Required pre-test parameters\n\nNone\n\n### Coverage\n\nHappy Path!"
+					},
+					"response": []
+				},
+				{
+					"name": "Update appointments status Service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is \" + responseCode.code] = responseCode.code === 200;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{host}}/lumira-appointments/users/{{userId}}/appointments/{{appointmentId}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authorization}}",
+								"description": ""
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"id\": \"J1450\",\n        \"type\": \"NORMAL\",\n        \"name\": \"Default Template\",\n        \"status\": \"DESPATCHED\",\n        \"startTime\": \"2017-04-02T16:16:00.000+0000\",\n        \"endTime\": \"2017-04-02T16:31:00.000+0000\",\n        \"address\": {\n            \"postalCode\": \"CV37 5DN\",\n            \"street\": \"Brackley Road\",\n            \"city\": \"TIDDINGTON\",\n            \"country\": \"United Kingdom\",\n            \"latitude\": \"52.184755938818\",\n            \"longitude\": \"-1.7143734518495\",\n            \"initialAddress\": \"79 Brackley Road - CV37 5DN TIDDINGTON\",\n            \"comment\": \"Next to Virgin Store\"\n        },\n        \"phoneNumber\": \"1\",\n        \"patient\": {\n            \"mpi\": \"1193\",\n            \"dateOfBirth\": \"2004-10-07T08:00:00.000+0000\",\n            \"gender\": \"Male\",\n            \"firstName\": \"JOHN\",\n            \"lastName\": \"AGUIAR\",\n            \"middleName\": \"J\",\n            \"optStatus\": \"Opted In\",\n            \"orgIds\": [\n                \"6e60f5a1-db26-4c2c-a121-0282a759b011\"\n            ],\n            \"locked_nonmember\": false\n        },\n        \"abilities\": [\n            {\n                \"name\": \"TEAM_AB\",\n                \"values\": [\n                    \"Balance Street Surgery\"\n                ]\n            },\n            {\n                \"name\": \"ABILITY\",\n                \"values\": [\n                    \"Leg Ulcer Management\",\n                    \"Medication Administration\"\n                ]\n            }\n        ],\n        \"statusChanges\": [\n            {\n                \"status\":\"DESPATCHED\",\n                \"statusString\":\"despatched\",\n                \"actualStartTime\":\"\",\n                \"actualEndTime\":\"\",\n                \"comment\":\"Test comment - postman tests\"\n            }\n        ]\n    }"
+						},
+						"description": "### Test Info\n\nThis verifies that `UpdateAppointmentStatus` works correctly.\n\n### Required pre-test parameters\n\nNone\n\n### Coverage\n\nHappy Path!"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer Service API",
+			"description": "Tests for Customer Service",
+			"item": [
+				{
+					"name": "Create Customer Service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is \" + responseCode.code] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{host}}/lumira-appointments/patients",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authorization}}",
+								"description": ""
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"mpi\": \"{{mpi}}\",\n   \"programName\" : \"{{programName}}\"\n}"
+						},
+						"description": "### Test Info\n\nThis verifies that `CreateCustomerService` works correctly and creates the customer successfully.\n\n### Required pre-test parameters\n\nNone\n\n### Coverage\n\nHappy Path!"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Customer Service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is \" + responseCode.code] = responseCode.code === 200;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{host}}/lumira-appointments/patients/{{mpi}}",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authorization}}",
+								"description": ""
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {},
+						"description": "### Test Info\n\nThis verifies that `DeleteCustomerService` works correctly and deletes the customer.\n\n### Required pre-test parameters\n\nNone\n\n### Coverage\n\nHappy Path!"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

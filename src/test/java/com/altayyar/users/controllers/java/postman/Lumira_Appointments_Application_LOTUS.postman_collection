@@ -1,0 +1,234 @@
+{
+	"id": "fb94593f-6e23-7ce9-74f1-683d5640ce11",
+	"name": "Lumira Appointments Application",
+	"description": "REst  API calls in Lumira Appointments Application",
+	"order": [
+		"22aa32db-eeb2-18f4-9c47-230e950e46e6",
+		"e0ccd243-8077-a838-01df-fe0204b924f6",
+		"44175215-6dde-1a11-86ac-1197bdd2c974",
+		"7dc06633-ed7c-907d-a169-7886913ddd35",
+		"71e527f7-aee4-8a33-d389-da3e7a5836da",
+		"0dbc4f0b-b11e-9931-74ce-d1aba6f84375",
+		"12b487d3-64f5-b097-4b87-378acaac1989"
+	],
+	"folders": [],
+	"timestamp": 0,
+	"owner": "27793",
+	"public": false,
+	"requests": [
+		{
+			"id": "0dbc4f0b-b11e-9931-74ce-d1aba6f84375",
+			"name": "Appointments  Build Health",
+			"description": "Appointments  Build Health",
+			"collectionId": "fb94593f-6e23-7ce9-74f1-683d5640ce11",
+			"method": "GET",
+			"headers": "//Authorization: Basic YXBpZ3JvdXA6THVtaXJhRHgx",
+			"dataMode": "params",
+			"data": [],
+			"rawModeData": "",
+			"tests": "tests[\"Login Status is OK\"] = responseCode.code === 202;\nvar data = JSON.parse(responseBody);\ntests[\" AuthToken is \" + data.authToken] = true;\nvar fullname = \"(\" + data.nm_first + \" \" + data.nm_last + \")\";\ntests[\" Logged in as \" + data.username + \" \" + fullname] = true;\ntests[\" Principal ID: \" + data.principal_id] = true;\n\n// Set Environmental variables\npostman.setEnvironmentVariable(\"user-person_id\", data.person_id);\npostman.setEnvironmentVariable(\"user-principal_id\", data.person_id);\npostman.setEnvironmentVariable(\"authToken\", data.authToken);\npostman.setEnvironmentVariable(\"principal_id\", data. principal_id);\n",
+			"preRequestScript": "",
+			"url": "{{host}}/lumira-appointments/admin/health",
+			"responses": []
+		},
+		{
+			"id": "12b487d3-64f5-b097-4b87-378acaac1989",
+			"headers": "Authorization: Basic c3VlZjpXZWxsMTAyNCE=\n",
+			"url": "{{host}}/patients/{{patient_mpi}}",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "DELETE",
+			"data": [],
+			"dataMode": "raw",
+			"version": 2,
+			"tests": "tests[\"Remove patient status code is 200\"] = responseCode.code === 200;\n",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1490695085238,
+			"name": "Remove a Patient From Kirona",
+			"description": "Removes a Patient from Kirona",
+			"collectionId": "fb94593f-6e23-7ce9-74f1-683d5640ce11",
+			"responses": [],
+			"rawModeData": ""
+		},
+		{
+			"id": "22aa32db-eeb2-18f4-9c47-230e950e46e6",
+			"name": "Appointments  Build Info",
+			"description": "",
+			"collectionId": "fb94593f-6e23-7ce9-74f1-683d5640ce11",
+			"method": "GET",
+			"headers": "Authorization: Basic YXBpZ3JvdXA6THVtaXJhRHgx",
+			"dataMode": "params",
+			"data": [],
+			"rawModeData": "",
+			"tests": "tests[\"Login Status is OK\"] = responseCode.code === 202;\nvar data = JSON.parse(responseBody);\ntests[\" AuthToken is \" + data.authToken] = true;\nvar fullname = \"(\" + data.nm_first + \" \" + data.nm_last + \")\";\ntests[\" Logged in as \" + data.username + \" \" + fullname] = true;\ntests[\" Principal ID: \" + data.principal_id] = true;\n\n// Set Environmental variables\npostman.setEnvironmentVariable(\"user-person_id\", data.person_id);\npostman.setEnvironmentVariable(\"user-principal_id\", data.person_id);\npostman.setEnvironmentVariable(\"authToken\", data.authToken);\npostman.setEnvironmentVariable(\"principal_id\", data. principal_id);\n",
+			"preRequestScript": "",
+			"url": "{{host}}/lumira-appointments/admin/info",
+			"responses": []
+		},
+		{
+			"id": "44175215-6dde-1a11-86ac-1197bdd2c974",
+			"name": "Update appointment",
+			"description": "Update appointment for a userId (principalId) for a given appointment\n\n\n",
+			"collectionId": "fb94593f-6e23-7ce9-74f1-683d5640ce11",
+			"method": "PUT",
+			"currentHelper": "basicAuth",
+			"helperAttributes": {
+				"id": "basic",
+				"username": "wellogic",
+				"password": "well1024!",
+				"saveToRequest": true
+			},
+			"headers": "userName: {{username}}\npassword: {{password}}\nContent-Type: application/json\nAuthorization: Basic d2VsbG9naWM6d2VsbDEwMjQh",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{  \n   \"id\": \"J1235\",\n    \"type\": \"NORMAL\",\n    \"name\": \"Catheter Change\",\n    \"status\": \"PLANNED\",\n    \"startTime\": \"2017-04-26T21:46:00.000+0000\",\n    \"endTime\": \"2017-04-26T22:46:00.000+0000\",\n    \"address\": {\n      \"postalCode\": \"M1 5AN\",\n      \"street\": \"Oxford Road\",\n      \"city\": \"Manchester\",\n      \"country\": \"United Kingdom\",\n      \"latitude\": \"53.477104601637\",\n      \"longitude\": \"-2.2436555150284\",\n      \"initialAddress\": \"Oxford Road - M1 5AN Manchester\"\n    },\n   \"statusChanges\":\n    [{\n    \"status\":\"STARTED\",\n    \"statusString\":\"Started\",\n    \"canceledTime\":\"2017-03-23T12:31:00.000+0000\",\n    \"comment\":\"Rescheduling the appointment\",\n    \"cancellationReasonCode\":\"4A8B3DA984BD220EE0531946BB0A8D20\"}],\n  \"patient\": {\n      \"mpi\": \"41084\",\n      \"dateOfBirth\": \"1959-09-18T15:50:00.000+0000\",\n      \"gender\": \"Another test code\",\n      \"firstName\": \"TEST\",\n      \"lastName\": \"QAPATIENT270\",\n      \"optStatus\": \"Unknown\",\n      \"orgIds\": [\n        \"6e60f5a1-db26-4c2c-a121-0282a759b011\"\n      ]\n   }\n }",
+			"tests": "//sjain\n\n//tests[\"No Content present\"] = responseHeaders.hasOwnProperty(\"Content-Type\");\n\ntests[\"No Content\"] = typeof postman.getResponseHeader(\"Content-Type\") === 'undefined';\ntests[\"Status code is 200\"] = responseCode.code === 200;\n\npostman.clearGlobalVariable(\"userId\");\npostman.clearGlobalVariable(\"appointmentId\");\n",
+			"preRequestScript": "\n// User id && patient mpi\npostman.setGlobalVariable(\"userId\", \"87514bde-6580-48ff-8193-e5ca3f1559d6\");\npostman.setGlobalVariable(\"appointmentId\", \"J1236\");\n\n// Todays Date and Time\n// var beginDate = Date.create().format('{yyyy}-{MM}-{dd}T{hh}-{mm}-{ss}');\n// var endDate = beginDate.addHours(4);\n",
+			"url": "{{host}}/lumira-appointments/users/{{userId}}/appointments/{{appointmentId}}",
+			"responses": []
+		},
+		{
+			"id": "71e527f7-aee4-8a33-d389-da3e7a5836da",
+			"name": "Appointments  Build Server  Metrics",
+			"description": "Appointments  Build Server  Metrics",
+			"collectionId": "fb94593f-6e23-7ce9-74f1-683d5640ce11",
+			"method": "GET",
+			"headers": "Authorization: Basic YXBpZ3JvdXA6THVtaXJhRHgx",
+			"dataMode": "params",
+			"data": [],
+			"rawModeData": "",
+			"tests": "tests[\"Login Status is OK\"] = responseCode.code === 202;\nvar data = JSON.parse(responseBody);\ntests[\" AuthToken is \" + data.authToken] = true;\nvar fullname = \"(\" + data.nm_first + \" \" + data.nm_last + \")\";\ntests[\" Logged in as \" + data.username + \" \" + fullname] = true;\ntests[\" Principal ID: \" + data.principal_id] = true;\n\n// Set Environmental variables\npostman.setEnvironmentVariable(\"user-person_id\", data.person_id);\npostman.setEnvironmentVariable(\"user-principal_id\", data.person_id);\npostman.setEnvironmentVariable(\"authToken\", data.authToken);\npostman.setEnvironmentVariable(\"principal_id\", data. principal_id);\n",
+			"preRequestScript": "",
+			"url": "{{host}}/lumira-appointments/admin/metrics",
+			"responses": []
+		},
+		{
+			"id": "7dc06633-ed7c-907d-a169-7886913ddd35",
+			"name": "Create a Patient AppointmentRequest",
+			"description": "Create a Patient AppointmentRequest",
+			"collectionId": "fb94593f-6e23-7ce9-74f1-683d5640ce11",
+			"method": "POST",
+			"headers": "Authorization: Basic c3VlZjpXZWxsMTAyNCE=\nContent-Type: application/json",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "  {\n    \"startTimeInMilliSecs\": \"2345678\",\n    \"endTimeInMilliSecs\": \"12344566\",\n    \"startDateStr\":\"startDate\",\n    \"endDateStr\":\"endDate\",\n    \"userId\" :\"userId\"\n  }",
+			"tests": "//tests[\"Status code is 200\"] = responseCode.code === 200;\nvar responseJson = xml2Json(responseBody);\nconsole.log(responseJson);\npostman.setGlobalVariable(\"kirona_session_id\", responseJson.openSessionResponse.sessionId); \n",
+			"preRequestScript": "",
+			"url": "{{host}}/patients/1234/appointment-requests",
+			"responses": []
+		},
+		{
+			"id": "e0ccd243-8077-a838-01df-fe0204b924f6",
+			"name": "Get appointments by user and dates",
+			"description": "// sjain\n\nGet appointments for a userId (patient mpi) between a begin and an end date\n\ndate format: yyyy-MM-dd'T'HH:mm:ss.SSSZ\n\nE.g : 2017-02-09T00:00:00 (All Dates in UTC time)\n             \nhttps://lotus.lumiradx.com/lumira-appointments/users/87514bde-6580-48ff-8193-e5ca3f1559d6/appointments?beginDate=2012-10-01T09:45:00.000Z&endDate=2017-10-10T09:45:00.000Z\n\n",
+			"collectionId": "fb94593f-6e23-7ce9-74f1-683d5640ce11",
+			"method": "GET",
+			"currentHelper": "basicAuth",
+			"helperAttributes": {
+				"id": "basic",
+				"username": "wellogic",
+				"password": "well1024!",
+				"saveToRequest": true
+			},
+			"headers": "userName: {{username}}\npassword: {{password}}\nAuthorization: Basic d2VsbG9naWM6d2VsbDEwMjQh",
+			"dataMode": "params",
+			"data": [],
+			"rawModeData": "",
+			"tests": "// sjain \ntests[\"Content-Type is present\"] = responseHeaders.hasOwnProperty(\"Content-Type\");\n\ntests[\"Status code is 200\"] = responseCode.code === 200;\n\nvar responseJSON = JSON.parse(responseBody);\nvar appointment = responseJSON[0];\n\nif (appointment !== null && typeof appointment !== 'undefined')\n    {\n        if (appointment.length !== 0)\n        {\n            tests[\"Appointment was found\"] = appointment.id !== '';\n        \n            tests[\"MPI of the user matched\"] = appointment.patient.mpi == '41084';\n        }\n    }\n\npostman.clearGlobalVariable(\"beginDate\");\npostman.clearGlobalVariable(\"endDate\");\npostman.clearGlobalVariable(\"mpi\");\n",
+			"preRequestScript": "\n// User id && patient mpi\npostman.setGlobalVariable(\"userId\", \"87514bde-6580-48ff-8193-e5ca3f1559d6\");\npostman.setGlobalVariable(\"mpi\", \"41084\");\n\npostman.setGlobalVariable(\"getAppointments.beginDate\", \"2017-03-25T00:00:00.000Z\");\npostman.setGlobalVariable(\"getAppointments.endDate\", \"2017-05-28T11:59:59.000Z\");\n",
+			"url": "{{host}}/lumira-appointments/users/{{userId}}/appointments?beginDate={{getAppointments.beginDate}}&endDate={{getAppointments.endDate}}",
+			"responses": [
+				{
+					"request": {
+						"id": "ab270927-52b0-4d1f-9961-448c7ebb3dec",
+						"description": "",
+						"method": "GET",
+						"headers": "userName: {{username}}\npassword: {{password}}\nAuthorization: Basic d2VsbG9naWM6d2VsbDEwMjQh",
+						"dataMode": "params",
+						"data": [],
+						"rawModeData": "",
+						"url": "{{appointments}}/lumira-appointments/users/{{userId}}/appointments?beginDate={{getAppointments.beginDate}}&endDate={{getAppointments.endDate}}"
+					},
+					"id": "667db3e2-cdb1-4a85-34c7-77fd74f90acb",
+					"name": "GET /lumira-appointments/users/87514bde-6580-48ff-8193-e5ca3f1559d6/appointments?beginDate=2017-03-25T00:00:00.000Z&amp;endDate=2017-03-28T11:59:59.000Z",
+					"status": "OK",
+					"responseCode": {
+						"code": 200,
+						"name": "OK",
+						"detail": ""
+					},
+					"language": "javascript",
+					"previewType": "text",
+					"time": 13570,
+					"headers": [
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate",
+							"name": "Cache-Control",
+							"description": "Tells all caching mechanisms from server to client whether they may cache this object. It is measured in seconds"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json;charset=UTF-8",
+							"name": "Content-Type",
+							"description": "The mime type of this content"
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 27 Mar 2017 13:26:02 GMT",
+							"name": "Date",
+							"description": "The date and time that the message was sent"
+						},
+						{
+							"key": "Expires",
+							"value": "0",
+							"name": "Expires",
+							"description": "Gives the date/time after which the response is considered stale"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache",
+							"name": "Pragma",
+							"description": "Implementation-specific headers that may have various effects anywhere along the request-response chain."
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked",
+							"name": "Transfer-Encoding",
+							"description": "The form of encoding used to safely transfer the entity to the user. Currently defined methods are: chunked, compress, deflate, gzip, identity."
+						},
+						{
+							"key": "X-Application-Context",
+							"value": "application:oracle,springDataJpa:7080",
+							"name": "X-Application-Context",
+							"description": "Custom header"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff",
+							"name": "X-Content-Type-Options",
+							"description": "The only defined value, \"nosniff\", prevents Internet Explorer from MIME-sniffing a response away from the declared content-type"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY",
+							"name": "X-Frame-Options",
+							"description": "Clickjacking protection: \"deny\" - no rendering within a frame, \"sameorigin\" - no rendering if origin mismatch"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block",
+							"name": "X-XSS-Protection",
+							"description": "Cross-site scripting (XSS) filter"
+						}
+					],
+					"cookies": [],
+					"text": "[{\"id\":\"J1236\",\"type\":\"NORMAL\",\"name\":\"Catheter Change\",\"status\":\"DESPATCHED\",\"startTime\":\"2017-03-26T19:46:00.000+0000\",\"endTime\":\"2017-03-26T20:46:00.000+0000\",\"address\":{\"postalCode\":\"M1 5AN\",\"street\":\"Oxford Road\",\"city\":\"Manchester\",\"country\":\"United Kingdom\",\"latitude\":\"53.477104601637\",\"longitude\":\"-2.2436555150284\",\"initialAddress\":\"Oxford Road - M1 5AN Manchester\"},\"patient\":{\"mpi\":\"41084\",\"dateOfBirth\":\"1959-09-18T15:50:00.000+0000\",\"gender\":\"Another test code\",\"firstName\":\"TEST\",\"lastName\":\"QAPATIENT270\",\"optStatus\":\"Unknown\",\"orgIds\":[\"6e60f5a1-db26-4c2c-a121-0282a759b011\"]}}]",
+					"rawDataType": "text",
+					"owner": "27793"
+				}
+			]
+		}
+	]
+}
