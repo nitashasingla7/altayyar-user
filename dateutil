@@ -1,0 +1,927 @@
+package com.wellogic.phoenix.common.util;
+
+import com.wellogic.phoenix.PhoenixException;
+import com.wellogic.phoenix.InvalidDataException;
+import com.wellogic.phoenix.common.DatePattern;
+import com.wellogic.phoenix.common.domain.dto.DateDTO;
+import com.wellogic.phoenix.common.domain.dto.DateTimeDTO;
+import org.apache.commons.lang3.time.DateUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+
+@Component
+public class DateUtility
+{
+    private static Logger logger = LoggerFactory.getLogger(DateUtility.class.getName());
+
+    public static final String DATE_FORMAT_YMD = "yyyyMMdd";
+    public static final String DATE_FORMAT_YMDHMS = "yyyyMMddHHmmss";
+    public static final String DATE_FORMAT_MDY_SLASH = "MM/dd/yyyy";
+    public static final String DATE_FORMAT_FOR_MAIL_HEADER = "E, dd MMM yyyy HH:mm:ss Z";
+    public static final String DATE_FORMAT_FULL = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    public static final String UTC_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    public static final String UTC_TIME_ZONE = "UTC";
+
+    private ThreadLocal<SimpleDateFormat> threadLocalDateFormatYMD = new ThreadLocal<SimpleDateFormat>();
+
+    // ################################################################################################################
+    public String formatDate(Date d, String format)
+    {
+        if (d == null || isBlank(format))
+        {
+            return null;
+        }
+
+        SimpleDateFormat sdf = null;
+        if (format.equals(DATE_FORMAT_YMD))
+        {
+            sdf = threadLocalDateFormatYMD.get();
+            if (sdf == null)
+            {
+                sdf = new SimpleDateFormat(format);
+                threadLocalDateFormatYMD.set(sdf);
+            }
+        }
+        else
+        {
+            sdf = new SimpleDateFormat(format);
+        }
+        return sdf.format(d);
+    }
+
+    // ################################################################################################################
+    /**
+     * Returns date as String using full format "yyyy-MM-dd'T'HH:mm:ss.SSSZ".
+     *
+     * @param d date to format
+     * @return date as {@link String} in "yyyy-MM-dd'T'HH:mm:ss.SSSZ" format or null if d is null
+     */
+    public static String formatDateFull(Date d)
+    {
+        if (d == null)
+        {
+            return null;
+        }
+
+        return new SimpleDateFormat(DATE_FORMAT_FULL).format(d);
+    }
+
+    // ################################################################################################################
+    // helper method to return date ignoring time component
+    public static Date retrieveDateWithoutTime(Date date)
+    {
+        if (date == null)
+        {
+            return null;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        return cal.getTime();
+        // return new DateTime(date).toDateMidnight().toDate();
+    }
+
+    public static Date retrieveDateWithoutTime(Date date, DateTimeZone timezone, boolean respectDaylightSavings)
+    {
+
+        //Arbitrary timezone which does respect daylight savings
+        TimeZone timezoneWithDST = TimeZone.getTimeZone("US/Alaska");
+
+        if (date == null)
+        {
+            return null;
+        }
+
+        if (!respectDaylightSavings)
+        {
+            DateTime localDate = new DateTime(date, timezone).withTimeAtStartOfDay();
+            return localDate.toDate();
+        }
+        // Need to adjust if the loaded data is in daylight savings and the current time is not, or vice versa
+        boolean currentlyInDST = timezoneWithDST.inDaylightTime(new Date());
+        boolean dateInDST = timezoneWithDST.inDaylightTime(date);
+        if (currentlyInDST == dateInDST)
+        {
+            DateTime localDate = new DateTime(date, timezone).withTimeAtStartOfDay();
+            return localDate.toDate();
+        }
+        else if (dateInDST && !currentlyInDST)
+        {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            cal.add(Calendar.HOUR_OF_DAY, 1);
+            DateTime localDate = new DateTime(cal.getTime(), timezone).withTimeAtStartOfDay().minusHours(1);
+            return localDate.toDate();
+        }
+        else
+        {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            cal.add(Calendar.HOUR_OF_DAY, -1);
+            DateTime localDate = new DateTime(cal.getTime(), timezone).withTimeAtStartOfDay().plusHours(1);
+            return localDate.toDate();
+        }
+
+    }
+
+    // ################################################################################################################
+    /**
+     * Convert a date string into Date object
+     *
+     * @param s string
+     * @return Date
+     * @throws ParseException
+     */
+    public Date toDate(String s) throws ParseException
+    {
+        SimpleDateFormat sdf = threadLocalDateFormatYMD.get();
+        if (sdf == null)
+        {
+            sdf = new SimpleDateFormat(DATE_FORMAT_YMD);
+            threadLocalDateFormatYMD.set(sdf);
+        }
+        return sdf.parse(s);
+    }
+
+    // ################################################################################################################
+    /**
+     * Retrieve earliest date from the List of Dates. Null is considered to be the earliest possible value.
+     *
+     * @param dates
+     * @return
+     */
+    public static Date retrieveEarliestDate(List<Date> dates)
+    {
+        if (UtilsCommon.isNullOrEmpty(dates))
+        {
+            return null;
+        }
+        Collections.sort(dates, Collections.reverseOrder(dateComparatorNullEarliest));
+        return dates.get(dates.size() - 1);
+    }
+
+    // ################################################################################################################
+    /**
+     * Retrieve earliest date from the List of Dates ignoring nulls.
+     *
+     * @param dates
+     * @return earliest date from the List of Dates ignoring nulls.
+     */
+    public static Date retrieveEarliestNonNullDate(List<Date> dates)
+    {
+        if (UtilsCommon.isNullOrEmpty(dates))
+        {
+            return null;
+        }
+        List<Date> datesWithoutNulls = (List<Date>) UtilsCommon.removeNullsFromCollection(new ArrayList<>(dates));
+        if (UtilsCommon.isNullOrEmpty(datesWithoutNulls))
+        {
+            return null;
+        }
+        Collections.sort(datesWithoutNulls, Collections.reverseOrder(dateComparatorNullEarliest));
+        return datesWithoutNulls.get(datesWithoutNulls.size() - 1);
+    }
+
+    // ################################################################################################################
+    /**
+     * Retrieve latest date from the List of Dates. Null is considered to be the earliest possible value.
+     *
+     * @param dates
+     * @return
+     */
+    public static Date retrieveLatestDate(List<Date> dates)
+    {
+        if (UtilsCommon.isNullOrEmpty(dates))
+        {
+            return null;
+        }
+        Collections.sort(dates, dateComparatorNullEarliest);
+        return dates.get(dates.size() - 1);
+    }
+
+    // ################################################################################################################
+    /**
+     * Retrieve latest date from the List of Dates, ignoring nulls.
+     *
+     * @param dates
+     * @return latest date from the List of Dates, ignoring nulls.
+     */
+    public static Date retrieveLatestNonNullDate(List<Date> dates)
+    {
+        if (UtilsCommon.isNullOrEmpty(dates))
+        {
+            return null;
+        }
+        List<Date> datesWithoutNulls = (List<Date>) UtilsCommon.removeNullsFromCollection(new ArrayList<>(dates));
+        if (UtilsCommon.isNullOrEmpty(datesWithoutNulls))
+        {
+            return null;
+        }
+        Collections.sort(datesWithoutNulls, dateComparatorNullEarliest);
+        return datesWithoutNulls.get(datesWithoutNulls.size() - 1);
+    }
+
+    // ################################################################################################################
+    public static Comparator<Date> dateComparatorNullEarliest = new Comparator<Date>() {
+        @Override
+        public int compare(Date s1, Date s2)
+        {
+            if (s1 == null && s2 == null)
+            {
+                return 0;
+            }
+            else if (s1 != null && s2 == null)
+            {
+                return 1;
+            }
+            else if (s1 == null && s2 != null)
+            {
+                return -1;
+            }
+            else
+            {
+                return s1.compareTo(s2);
+            }
+        }
+    };
+
+    // ################################################################################################################
+    /**
+     * Given 2 dates, verify if they are equal by day. This does NOT do time comparison
+     *
+     * @param date1
+     * @param date2
+     * @return boolean
+     */
+    public static boolean dateDaysEqual(Date date1, Date date2)
+    {
+        if (date1 == null || date2 == null)
+        {
+            return false;
+        }
+
+        if (DateUtils.isSameDay(date1, date2))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    // ################################################################################################################
+    /**
+     * Creates {@link java.sql.Date} from given date in a String.
+     *
+     * @param date as String
+     * @param format format of string-passed date
+     * @return newly created {@link java.sql.Date}
+     */
+    public static java.sql.Date toSQLDate(String date, String format)
+    {
+        if ((date == null) || (format == null))
+        {
+            return null;
+        }
+
+        Date utilDate = null;
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+
+        try
+        {
+            utilDate = sdf.parse(date);
+        }
+        catch (ParseException e)
+        {
+            logger.error(e.getMessage());
+            logger.error(e.getStackTrace().toString());
+            return null;
+        }
+
+        return new java.sql.Date(utilDate.getTime());
+    }
+
+    // ################################################################################################################
+    /**
+     * Creates {@link java.sql.Date} from given {@link Date}.
+     *
+     * @param date of type {@link Date}
+     *
+     * @return newly created {@link java.sql.Date}
+     */
+    public static java.sql.Date toSQLDate(Date date)
+    {
+        if (date == null)
+        {
+            return null;
+        }
+        return new java.sql.Date(date.getTime());
+    }
+
+    // ################################################################################################################
+    /**
+     * Convert a given java.util.Date to the GMT timezone. Currently all of our dates in the DB are marked as GMT, it is
+     * our responsibility to convert any dates to GMT if we want to include them in our queries.
+     */
+    public static java.sql.Timestamp toSQLTime(String date, String format)
+    {
+        java.sql.Timestamp sqlTime = null;
+        try
+        {
+            if ((date == null) || (format == null))
+            {
+                return null;
+            }
+            Date thisDate = null;
+            SimpleDateFormat sdf = new SimpleDateFormat(format);
+            thisDate = sdf.parse(date);
+            sqlTime = new java.sql.Timestamp(thisDate.getTime());
+        }
+        catch (Exception ex)
+        {
+            throw new PhoenixException("Exception occurred while converting string date " + date + " with format " +
+                                        format + " to SQL Timestamp.", ex);
+        }
+
+        return sqlTime;
+    }
+
+   // ################################################################################################################
+   /**
+    * Gives {@link Date} object which is X days before current date.
+    *
+    * @param x how many days to subtract from current date
+    * @return {@link Date} object which is X days before current date.
+    */
+   public static Date getCurDateMinusXDays(Integer x)
+   {
+		if (x == null || x < 0)
+        {
+            return null;
+        }
+
+       return new Date(new DateTime().minusDays(x).getMillis());
+   }
+
+   /**
+    * Gives {@link DateTime} object which is X days before supplied date.
+    *
+    * @param dateTime date and time to subtract from.
+    * @param x how many days to subtract from current date
+    * @return
+    */
+   public static Date getDateMinusXDays(DateTime dateTime, Integer x)
+   {
+        if (x == null || x < 0 || dateTime == null)
+        {
+            return null;
+        }
+
+       return new Date(dateTime.minusDays(x).getMillis());
+   }
+
+   /**
+    * Find if the target Date is between start and end Date ( inclusive of start and end dates)
+    * @param startDate
+    * @param endDate
+    * @param targetDate
+    * @return true if target is between start and end, false if not or if any null input.
+    */
+   public static boolean isEqualOrBetween(Date startDate, Date  endDate, Date targetDate)
+   {
+       if (targetDate == null || startDate == null || endDate == null)
+       {
+           return false;
+       }
+       if ( targetDate.equals(endDate)  ||
+            targetDate.equals(startDate)  ||
+           (targetDate.after(startDate) && targetDate.before(endDate)))
+       {
+           return true;
+       }
+       return false;
+   }
+
+   // ################################################################################################################
+   /**
+    * Converts {@link DateTimeDTO} to {@link Date}. Throws {@link PhoenixException} if DateTimeDTO can't be parsed.
+    *
+    * @param dateDTO
+    * @return date if not null or dateDTO as {@link Date} otherwise. If noth nulls, returns null.
+    */
+   public static Date convertDateDTOToDate(DateTimeDTO dateDTO)
+   {
+       if (dateDTO != null && !UtilsCommon.isNullOrEmpty(dateDTO.getDateTimeString()))
+       {
+           try
+           {
+               return dateDTO.toDateTime(null);
+           }
+           catch (ParseException ex)
+           {
+               throw new PhoenixException("Error parsing " + dateDTO.getDateTimeString() + " from DateTimeDTO", ex);
+           }
+       }
+       else return null;
+   }
+
+   // ################################################################################################################
+   // TIME ZONE SECTION
+
+   /**
+    * For a given timeZone, return the current date and time with the timezone applied to it.
+    * @param timeZone
+    * @return
+    */
+   public static DateTime getCurrentDateTimeWithTimezoneApplied(US_Timezone timeZone)
+   {
+       if(timeZone == null)
+       {
+           return null;
+       }
+
+       DateTimeZone dateTimeZone = getTimeZoneByName(timeZone.getLongName());
+
+       return DateTime.now(dateTimeZone);
+   }
+
+   /**
+    * Standard US Timezones
+    **/
+   public static enum US_Timezone
+   {
+       US_EASTERN("US/Eastern"),    // -5 hours
+       US_CENTRAL("US/Central"),    // -6 hours
+       US_MOUNTAIN("US/Mountain"),  // -7 hours
+       US_PACIFIC("US/Pacific"),    // -8 hours
+       US_ALASKA("US/Alaska"),      // -9 hours
+       US_HAWAII("US/Hawaii"),      // 10 hours
+       US_SAMOA("US/Samoa");
+
+       /**
+        * Constructor
+        * @param n Long name
+        */
+       private US_Timezone(String n)
+       {
+           longName = n;
+       }
+
+       /** Name used by Jora utilities. */
+       public String longName;
+
+       public String getLongName()
+       {
+           return longName;
+       }
+
+       public void setLongName(String longName)
+       {
+           this.longName = longName;
+       }
+   };
+
+   /**
+    * Get the standard list of TimeZone names.
+    * Uses the Joda TimeZone library.
+    * @return Set of displayable TimeZone strings
+    */
+   public static Set<String> getTimeZoneNames()
+   {
+       Set<String> zones = DateTimeZone.getAvailableIDs();
+       return zones;
+   }
+
+   /**
+    * Get an ordered list of TimeZone names, with US Timezones first.
+    * Uses the Joda TimeZone library.
+    * @return List of displayable TimeZone strings
+    */
+   public static List<String> getTimeZoneNamesUSFirst()
+   {
+       Set<String> allZones = DateTimeZone.getAvailableIDs();
+       List<String> orderedZones = new ArrayList<String>(allZones.size());
+       // Add US zones first.
+       for (US_Timezone usZone : US_Timezone.values())
+       {
+           String name = usZone.longName;
+           orderedZones.add(name);
+           allZones.remove(name);
+       }
+       // Now add the remaining zones.
+       for (String zone : allZones)
+       {
+           orderedZones.add(zone);
+       }
+       return orderedZones;
+   }
+
+   /**
+    * Get a DateTimeZone given a name.
+    * @param name Name of TimeZone.  Null means default time zone.
+    * @return DateTimeZone or null if not found.
+    */
+   public static DateTimeZone getTimeZoneByName(String name)
+   {
+       try
+       {
+           DateTimeZone zone = DateTimeZone.forID(name);
+           return zone;
+       }
+       catch (IllegalArgumentException ex)
+       {
+           // Not found.  Return null.
+           return null;
+       }
+   }
+
+   /**
+    * Given a time zone String, return a DateTimeZone object matching the specified offset.
+    * 
+    * Supports the formats:  +05:00, 05:00,-05:00
+    */
+   public static DateTimeZone getTimeZone(String timeZoneString)
+   {
+       int hours = 0;
+       int minutes = 0;
+
+       if(isBlank(timeZoneString))
+       {
+           return DateTimeZone.getDefault();
+       }
+       else if(!timeZoneString.matches("(\\-|\\+)?\\d\\d:\\d\\d"))
+       {
+           return DateTimeZone.getDefault();
+       }
+       else if(timeZoneString.charAt(0) == '-')
+       {
+           hours = Integer.parseInt(timeZoneString.substring(1, 3)) * -1;
+           minutes = Integer.parseInt(timeZoneString.substring(4, 6));
+           return DateTimeZone.forOffsetHoursMinutes(hours, minutes);
+       }
+       else if(timeZoneString.charAt(0) == '+')
+       {
+           hours = Integer.parseInt(timeZoneString.substring(1, 3));
+           minutes = Integer.parseInt(timeZoneString.substring(4, 6));
+           return DateTimeZone.forOffsetHoursMinutes(hours, minutes);
+       }
+       else
+       {
+           hours = Integer.parseInt(timeZoneString.substring(0, 2));
+           minutes = Integer.parseInt(timeZoneString.substring(3, 5));
+           return DateTimeZone.forOffsetHoursMinutes(hours, minutes);
+       }
+   }
+
+   /**
+    * Thread-safe string-to-date formatter.
+    */
+   public ThreadLocal<DateTimeFormatter> stringToDateFormat = new ThreadLocal<DateTimeFormatter>() {
+       @Override
+       protected DateTimeFormatter initialValue()
+       {
+           return DateTimeFormat.forPattern(DATE_FORMAT_MDY_SLASH);
+       }
+   };
+
+    /**
+     * method to set the max time frame to the passed date String
+     *
+     * @param dateString
+     * @param useAmpm
+     * @return date object
+     */
+    public Date addMaxTimeFrameToDate(final String dateString, boolean useAmpm)
+    {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(this.stringToDateFormat.get().parseDateTime(dateString).toDate());
+
+        calendar.add(Calendar.MINUTE, calendar.getActualMaximum(Calendar.MINUTE));
+        calendar.add(Calendar.SECOND, calendar.getActualMaximum(Calendar.SECOND));
+        if (useAmpm)
+        {
+            calendar.add(Calendar.HOUR, calendar.getActualMaximum(Calendar.HOUR));
+            calendar.set(Calendar.AM_PM, Calendar.PM);
+        }
+        else
+        {
+            calendar.add(Calendar.HOUR_OF_DAY, calendar.getActualMaximum(Calendar.HOUR_OF_DAY));
+        }
+
+        return calendar.getTime();
+    }
+
+    /**
+     * removes time part from the given string
+     * works for the formats 'MM/dd/yyyy hh:mm:ssZ'
+     *
+     * @param dateString
+     * @return date in String in the format 'MM/dd/yyyy'
+     */
+    public static String stripTimeFromDate(final String dateString)
+    {
+        Date date = getCustomDate(dateString);
+        DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+
+        return formatter.format(date);
+    }
+
+    /**
+     * to parse the date String with custom format to java date
+     * input string format will be 'MM/dd/yyyy hh:mm:ssZ'
+     *
+     * @param dateString
+     * @return
+     */
+    public static Date getCustomDate(String dateString)
+    {
+        DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
+        builder.appendMonthOfYear(2).appendLiteral('/').appendDayOfMonth(2).appendLiteral('/').appendYear(2, 4)
+                .appendLiteral(' ').appendHourOfDay(2).appendLiteral(':').appendMinuteOfHour(2).appendLiteral(':')
+                .appendSecondOfMinute(2).appendLiteral('Z');
+        return builder.toFormatter().parseDateTime(dateString).toDate();
+    }
+
+    /**
+     * Null-safe compare method for two {@link Date}s. Null considered to be less than any date.
+     * @param one first {@link Date} to compare
+     * @param two second {@link Date} to compare
+     * @return less than 0 if first date is less than second one, 0 if equal, > 0 otherwise.
+     */
+    public static int nullSafeComparator(final Date one, final Date two)
+    {
+        if (one == null ^ two == null)
+        {
+            return (one == null) ? -1 : 1;
+        }
+
+        if (one == null && two == null)
+        {
+            return 0;
+        }
+
+        return one.compareTo(two);
+    }
+
+   /**
+    * converts java.util.Date to String value of the Date converted to UTC  timezone and UTC  date format
+    *
+    * @param date
+    * @return
+    * @deprecated This method is wrong. Date is simply same number of millis. Consider using JodaTime of Date in Java 8.
+    */
+    @Deprecated
+    public static Date getUTCDate(Date date)
+    {
+        SimpleDateFormat formatter = new SimpleDateFormat(UTC_DATE_TIME_FORMAT);
+        TimeZone utc = TimeZone.getTimeZone(UTC_TIME_ZONE);
+        formatter.setTimeZone(utc);
+        Date utcDate =  null;
+        try
+        {
+            utcDate = formatter.parse(formatter.format(date));
+        }
+        catch (ParseException e)
+        {
+            logger.info(" Error parsing Date when converting to UTC "+e.getMessage(),e);
+        }
+
+        return utcDate;
+    }
+
+    /**
+     * Method converts String to java.util.Date. Tries to convert the timeZone string to {@link TimeZone} and get the offset in
+     * milliseconds. Subtracts the offset from date to get the UTC time in specified timezone. For e.g. if date string
+     * "01/04/2015" and timeZone "GMT-5" is passed , this method will return Sun Jan 04 05:00:00 GMT 2015
+     *
+     * @param dateStr
+     * @param timeZone offset to apply to date
+     * @return
+     * @throws ParseException
+     */
+    public Date stringToDate(String dateStr, String timeZone)
+    {
+        DateTime dateTime = stringToDateFormat.get().parseDateTime(dateStr);
+
+        if(isNotBlank(timeZone))
+        {
+            dateTime = dateTime.minus(TimeZone.getTimeZone(timeZone).getRawOffset());
+        }
+
+        return dateTime.toDate();
+    }
+
+    /**
+     * This method takes in an offset in this format: -04:00 or 04:00. And then reverses that offset by either adding a
+     * (-) or by removing the (-) sign. If we were given an offset of -04:00, the return would be 04:00. If we were
+     * given an offset of 04:00 then we would return -04:00. If we were given an offset of +04:00 then we would return
+     * -04:00.
+     *
+     * This is necessary to bring the date parameter into the proper 24 hour view we are looking for. Assuming we have a
+     * timestamp that is 08/30/2012 00:00 EST, we want to know what that time is in UTC (since that is what our DB
+     * stores records as). So we want to bring that time to GMT, and we do that by reversing the offset that is given to
+     * us. 08/30/2012 00:00 EST -> 08/30/2012 04:00 UTC/GMT
+     *
+     * @param offset
+     * @return
+     */
+    public static String reverseOffset(String offset)
+    {
+        if (offset == null || offset.trim().length() < 1)
+        {
+            return null;
+        }
+
+        if (offset.indexOf("-") > -1)
+        {
+            return offset.trim().replace("-", "");
+        }
+
+        if (offset.indexOf("+") > -1)
+        {
+            return offset.trim().replace("+", "-");
+        }
+
+        if (offset.indexOf("-") == -1)
+        {
+            return "-" + offset.trim();
+        }
+
+        return offset;
+    }
+
+    /**
+     * Return true if targetDate is within one day of compareDate, used to determine if an event linked to a visit
+     * actually falls outside the visit
+     *
+     * @param compareDate
+     * @param targetDate
+     * @return
+     */
+    public static boolean withinOneDay(Date compareDate, Date targetDate)
+    {
+        DateTime dateTime = new DateTime(compareDate);
+        DateTime targetDateTime = new DateTime(targetDate);
+        DateTime windowStart = dateTime.minusDays(1);
+        DateTime windowEnd = dateTime.plusDays(1);
+        return !targetDateTime.isBefore(windowStart) && !targetDateTime.isAfter(windowEnd);
+    }
+
+    /**
+     * Return Date passed in milliseconds.
+     *
+     * @param date
+     * @return
+     */
+    public static Long getDateTimeMilliseconds(Date date)
+    {
+        Long timeMilliseconds = 0L;
+        if (date != null)
+        {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            timeMilliseconds = calendar.getTimeInMillis();
+        }
+        
+        DateFormat df = new SimpleDateFormat("dd:MM:yy:HH:mm:ss");
+
+        return timeMilliseconds;
+        
+        
+
+    }
+
+    /**
+     * This method returns a date time dto with UTC date format from given date.
+     *
+     * @param date
+     * @return date time dto
+     */
+    public static DateTimeDTO getDateTimeDTO(Date date)
+    {
+        if (date == null)
+        {
+            throw new InvalidDataException("Date can not be null to convert to a date time dto.");
+        }
+        DateTimeDTO dateTimeDto = new DateTimeDTO(DateUtility.getUTCDate(date).toString());
+        dateTimeDto.setFormat(DateUtility.UTC_DATE_TIME_FORMAT);
+        return dateTimeDto;
+    }
+
+    /**
+     * Converts a DateTimeDTO using the timezone passed-in to a Date Object. If
+     * it doesn't exist, null will be returned.
+     *
+     * @param dateDto  date details
+     * @param timezone
+     * @return  Date
+     */
+    public static Date getDobDate(DateDTO dateDto, String timezone) {
+        Date dob = null;
+        if (dateDto != null) {
+            try {
+
+                dob = dateDto.toDate(timezone);
+            } catch (InvalidDataException ex) {
+                String errorMessage = "An issue occured with parsing the"
+                    + " Date -" + dateDto.getDateString()
+                    + "- against the format provided -"
+                    + dateDto.getFormat();
+
+                throw new InvalidDataException(errorMessage);
+            }
+        }
+
+        return dob;
+    }
+
+    /**
+     * Converts the given date in format(YYYYMMDD) into java.util.Date.Format is fixed as this come from Calendar
+     * control in UI
+     *
+     * @param date
+     * @return java.util.Date and null will be returned if the input is invalid
+     */
+    public static Date calendarDatetoUtilDate(String date)
+    {
+        Date utilDate = null;
+        try
+        {
+
+            if (isNotBlank(date))
+            {
+                DateTimeFormatter formatter = DateTimeFormat.forPattern(DatePattern.YYYYMMDD.getPattern());
+                DateTime dt = formatter.parseDateTime(date);
+                utilDate = dt.toDate();
+            }
+
+        }
+        catch (Exception e)
+        {
+            logger.error("Error in converting date " + date, e);
+        }
+
+        return utilDate;
+
+    }
+
+    /**
+     * Creates a Date object parsed with out applying timezone from a give dob as string and format.
+     *
+     * @param dobStr - dob as string
+     * @param dobStrformat - dob format
+     * @return
+     * @throws InvalidDataException if the dob string value is not been parsed against the given format.
+     */
+    public static Date getDobAsDate(String dobStr, String dobStrformat)
+    {
+        DateTimeDTO dobDto = new DateTimeDTO();
+        dobDto.setDateTimeString(dobStr);
+        dobDto.setFormat(dobStrformat);
+        Date dob;
+        try
+        {
+            dob = dobDto.toDateTime(null);
+        }
+        catch (ParseException e)
+        {
+            throw new InvalidDataException("Could not parse the date",e);
+        }
+        return dob;
+    }
+
+    /**
+     * Trim Seconds and Milliseconds on the input Date object.
+     *
+     * @return Date with seconds and milliseconds trimmed
+     */
+    public static Date trimSecondsAndMilliSeconds(Date dateOtBeTrimmed)
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(dateOtBeTrimmed);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+}
