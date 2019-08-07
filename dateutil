@@ -37,6 +37,21 @@ public class DateUtility
     public static final String UTC_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     public static final String UTC_TIME_ZONE = "UTC";
 
+       //Converting milliseconds to Date using Calendar
+       Calendar cal = Calendar.getInstance();
+       cal.setTimeInMillis(currentDateTime);
+       System.out.println("Milliseconds to Date using Calendar:"
+               + df.format(cal.getTime()));
+      
+       //copying one Date's value into another Date in Java
+       Date now = new Date();
+       Date copiedDate = new Date(now.getTime());
+      
+       System.out.println("original Date: " + df.format(now));
+       System.out.println("copied Date: " + df.format(copiedDate));
+https://javarevisited.blogspot.com/2012/12/how-to-convert-millisecond-to-date-in-java-example.html
+
+Read more: https://javarevisited.blogspot.com/2012/12/how-to-convert-millisecond-to-date-in-java-example.html#ixzz5vwGqEnG9
     private ThreadLocal<SimpleDateFormat> threadLocalDateFormatYMD = new ThreadLocal<SimpleDateFormat>();
 
     // ################################################################################################################
