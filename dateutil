@@ -940,3 +940,18 @@ Read more: https://javarevisited.blogspot.com/2012/12/how-to-convert-millisecond
         return cal.getTime();
     }
 }
+
+// Do not rename that bean, otherwise Spring MVC won't pick it up!
+@Bean("localeResolver") 
+public LocaleResolver acceptHeaderLocaleResolver() {
+    AcceptHeaderLocaleResolver resolver = new AcceptHeaderLocaleResolver();
+
+    resolver.setDefaultLocale(Locale.GERMAN);
+    resolver.setSupportedLocales(Arrays.asList(
+            Locale.GERMAN,
+            Locale.US,
+            Locale.FRENCH
+    ));
+
+    return resolver;
+}
