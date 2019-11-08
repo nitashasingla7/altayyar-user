@@ -1,0 +1,46 @@
+ollowing are some of the best practices that we can follow to avoid any code overridding in our repositories.
+
+
+1. create a new branch from Development when starting for a new feature , We can use name initials AB_RTB_1223, using name initials will help us identifying the person quickly whenevr someone needs to merge/delete that branch.
+2. Give a meaning commit message always to help Pull request reviewi.
+3. Try to keep the commits to minimum , we can keep committing on our local but later on all commits should be squashed to one using rebase interactively.
+This will help us keeping the repository clean and making revert process easy in case if needed. Also, this will help in rebase .
+4. Lastly, we should take latest from development atleast daily but this can be possible if we don't push the code with compilation errors and take responsibility that whenever we are pushing it will not break other's local. Or even, if it breaks then atleast announce that whoever working in that container needs to make 'what' changes to so that their work is not impacted.
+Also, inform the team about any new configuration/major changes properly. So that, team doesn't spend time investigating how to make project run in their local system.
+
+Following are some of the git commands that can be useful if you aren't using them already.
+
+
+Creating a branch (from a parent branch)
+
+$ git checkout -b <branch name> <parent branch>
+ 
+
+Rebasing a branch (from a parent branch(Development))
+ - When you push your changes to origin and have a conflicting files for merging to Development
+
+$ git checkout <parent branch>
+$ git pull
+$ git checkout <branch name>
+$ git pull
+$ git rebase <parent branch>
+$ git push <parent branch>
+
+
+Doing a Git rebase:
+Commit changes to your branch
+Checkout master
+Pull from master
+Checkout your branch
+git rebase master
+Resolve any conflicts
+git rebase --continue
+
+<parent branch = Development>, <branch name> = feature branch
+
+To soft delete your local changes from a commit use following :
+git reset --soft HEAD~no of commits (e.g. HEAD~1)
+This comes handy when you commit to a branch and later you realise you need latest from development (if you want to avoid rebase).
+uncommit the changes, stash them, checkout development, do git pull, create a new branch (i.e. fresh from lastest development), apply the stashed changes and then commit them. then do a git push and raise a pull request.
+
+This is bit lengthy process, but i have found it foolproof. It doesn't override anyone's changes, it makes you sure what you are putting in your branch. 
